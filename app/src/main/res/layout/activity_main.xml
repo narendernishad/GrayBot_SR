@@ -57,24 +57,26 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginTop="30dp">
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="SONG TITLE"
+                    android:textAlignment="center"
                     android:textFontWeight="10sp"
-                    android:textSize="30sp"
                     android:id="@+id/title"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="CHANNEL NAME"
+                    android:textAlignment="center"
                     android:textFontWeight="15sp"
-                    android:textSize="25sp"
                     android:id="@+id/channel"/>
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
+            android:layout_marginTop="30dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:accessibilityPaneTitle="PLAYBACK"
@@ -125,6 +127,16 @@
                 android:onClick="runfff"
                 android:textSize="18sp" />
         </LinearLayout>
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seek"
+            android:padding="15sp" />
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:indeterminate="true"
+            android:id="@+id/progress" />
 
     </LinearLayout>
 
