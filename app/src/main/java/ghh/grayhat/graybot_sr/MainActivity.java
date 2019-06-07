@@ -227,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void playAudio() {
         System.out.println("SONG NUMBER : "+currentSong);
-        Toast.makeText(this,"PLAYING : "+ndat.get("title"),Toast.LENGTH_LONG).show();
         if(currentSong>=songs.size())
         {
             return;
@@ -235,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
         mediaPlayer=new MediaPlayer();
         isSongStarted=true;
         setView();
+        Toast.makeText(this,"PLAYING : "+ndat.get("title"),Toast.LENGTH_LONG).show();
         try {
             mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -243,7 +243,8 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.prepare();
             pg.setVisibility(pg.INVISIBLE);
             mediaPlayer.start();
-            seek.setMax(getDuration()*1000);
+            seek.setProgress(0);
+            seek.setMax(mediaPlayer.getDuration());
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
