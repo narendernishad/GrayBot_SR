@@ -1,12 +1,22 @@
 package ghh.grayhat.graybot_sr;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.session.MediaSession;
+import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.StrictMode;
+import android.renderscript.RenderScript;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,6 +25,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,8 +60,14 @@ public class MainActivity extends AppCompatActivity {
     PyObject ndat;
     SeekBar seek;
     private Handler mHandler;
+    private Notification mNotification;
+    private static final int NOTIF_ID = 1234;
+    private NotificationCompat.Builder mBuilder;
+    private NotificationManager mNotificationManager;
+    private RemoteViews mRemoteViews;
     ProgressBar pg;
     Bitmap bit;
+    private boolean notificationStarted;
 
     @Override
     protected void onResume() {
@@ -276,6 +293,16 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.prepare();
             pg.setVisibility(pg.INVISIBLE);
             mediaPlayer.start();
+
+            if(notificationStarted)
+            {
+                updateNotification();
+            }
+            else
+            {
+                setUpNotification();
+            }
+            play.setText("||");
             seek.setProgress(0);
             seek.setMax(mediaPlayer.getDuration());
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -392,7 +419,78 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void runfff(View view) {
+        if(mediaPlayer==null)
+        {
+            return;
+        }
         mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()+5000);
+    }
+
+    private void setUpNotification(){
+
+        notificationStarted=true;
+
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // we need to build a basic notification first, then update it
+        Intent intentNotif = new Intent(this, MainActivity.class);
+        intentNotif.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent pendIntent = PendingIntent.getActivity(this, 0, intentNotif, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // notification's layout
+        mRemoteViews = new RemoteViews(getPackageName(), R.layout.notification_layout);
+        // notification's icon
+        mRemoteViews.setImageViewResource(R.id.notif_icon, R.mipmap.ic_launcher);
+        // notification's title
+        mRemoteViews.setTextViewText(R.id.notif_title, ndat.get("title")+"");
+
+        mRemoteViews.setTextViewText(R.id.notif_content,ndat.get("author")+"");
+
+        mBuilder = new NotificationCompat.Builder(this);
+
+        CharSequence ticker = getResources().getString(R.string.ticker_text);
+        int apiVersion = Build.VERSION.SDK_INT;
+
+        if (apiVersion < Build.VERSION_CODES.HONEYCOMB) {
+            mNotification = new Notification(R.mipmap.ic_launcher, ticker, System.currentTimeMillis());
+            mNotification.contentView = mRemoteViews;
+            mNotification.contentIntent = pendIntent;
+
+            mNotification.flags |= Notification.FLAG_NO_CLEAR; //Do not clear the notification
+            mNotification.defaults |= Notification.DEFAULT_LIGHTS;
+
+            // starting service with notification in foreground mode
+            mNotificationManager.notify(NOTIF_ID, mNotification);
+
+        }else if (apiVersion >= Build.VERSION_CODES.HONEYCOMB) {
+            mBuilder.setSmallIcon(R.mipmap.ic_launcher)
+                    .setAutoCancel(false)
+                    .setOngoing(true)
+                    .setContentIntent(pendIntent)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                    .setContent(mRemoteViews)
+                    .setTicker(ticker);
+
+            // starting service with notification in foreground mode
+            mNotificationManager.notify(NOTIF_ID, mBuilder.build());
+        }
+    }
+
+    // use this method to update the Notification's UI
+    private void updateNotification(){
+
+        int api = Build.VERSION.SDK_INT;
+        // update the title
+        mRemoteViews.setTextViewText(R.id.notif_title, ndat.get("title")+"");
+        mRemoteViews.setTextViewText(R.id.notif_content,ndat.get("author")+"");
+
+        // update the notification
+        if (api < Build.VERSION_CODES.HONEYCOMB) {
+            mNotificationManager.notify(NOTIF_ID, mNotification);
+        }else if (api >= Build.VERSION_CODES.HONEYCOMB) {
+            mNotificationManager.notify(NOTIF_ID, mBuilder.build());
+        }
     }
 
 }

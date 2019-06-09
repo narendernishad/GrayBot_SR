@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">GrayBot</string>
+    <string name="ticker_text">GrayBot</string>
 </resources>
