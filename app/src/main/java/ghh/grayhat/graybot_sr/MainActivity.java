@@ -50,6 +50,49 @@ public class MainActivity extends AppCompatActivity {
     SeekBar seek;
     private Handler mHandler;
     ProgressBar pg;
+    Bitmap bit;
+
+    @Override
+    protected void onResume() {
+
+        super.onResume();
+        if(songs==null)
+        {
+            return;
+        }
+        if(songs.size()>0)
+        {
+            setViewResume();
+            if(mediaPlayer!=null) {
+                seek.setMax(mediaPlayer.getDuration());
+                seek.setProgress(mediaPlayer.getCurrentPosition());
+            }
+        }
+    }
+
+    private void setViewResume() {
+        pg.setVisibility(pg.VISIBLE);
+        PyObject titl=ndat.get("title");
+        PyObject img=ndat.get("thumb");
+        try {
+            thumb.setImageBitmap(bit);
+            title.setText(""+titl);
+            PyObject chnl=ndat.get("author");
+            channel.setText(""+chnl);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        pg.setVisibility(pg.INVISIBLE);
+    }
+
+    @Override protected void onStart() {
+
+        super.onStart();
+        Toast.makeText(this,"STARTED",Toast.LENGTH_SHORT).show();
+        pg.setVisibility(View.INVISIBLE);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             next.setText(">>");
             fff=(Button)findViewById(R.id.fff);
             fff.setText(">>>");
-            pg=(ProgressBar)findViewById(R.id.progress);
+            pg=(ProgressBar)findViewById(R.id.progressBar);
             try
             {
                 if (! Python.isStarted()) {
@@ -90,30 +133,14 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             seek=(SeekBar)findViewById(R.id.seek);
-            pg.setVisibility(pg.INVISIBLE);
-            seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    seekAudio(progress,fromUser);
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-
-                }
-            });
-
         }
     }
 
     private void seekAudio(int progress, boolean fromUser) {
         if(mediaPlayer != null && fromUser){
+            mediaPlayer.pause();
             mediaPlayer.seekTo(progress);
+            mediaPlayer.start();
         }
         else if(fromUser)
         {
@@ -169,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void search(View view) {
+        pg.setVisibility(View.VISIBLE);
         String query=""+queryS.getText();
         Toast.makeText(this,"SEARCHING...",Toast.LENGTH_SHORT).show();
         songs = getLinks(query);
@@ -179,13 +207,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setView() {
-        pg.setVisibility(pg.VISIBLE);
+        pg.setVisibility(View.VISIBLE);
         ndat=pafy.callAttr("new",""+songs.get(currentSong));
         PyObject titl=ndat.get("title");
         PyObject img=ndat.get("thumb");
         pg.setVisibility(pg.INVISIBLE);
         try {
-            thumb.setImageBitmap(getBitmapFromURL(""+img));
+            bit=getBitmapFromURL(""+img);
+            thumb.setImageBitmap(bit);
             title.setText(""+titl);
             PyObject chnl=ndat.get("author");
             channel.setText(""+chnl);
@@ -227,6 +256,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void playAudio() {
         System.out.println("SONG NUMBER : "+currentSong);
+        if(songs==null)
+        {
+            return;
+        }
         if(currentSong>=songs.size())
         {
             return;
@@ -264,6 +297,22 @@ public class MainActivity extends AppCompatActivity {
                     {
                         int mCurrentPosition=mediaPlayer.getCurrentPosition();
                         seek.setProgress(mCurrentPosition);
+                        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                            @Override
+                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                seekAudio(progress,fromUser);
+                            }
+
+                            @Override
+                            public void onStartTrackingTouch(SeekBar seekBar) {
+
+                            }
+
+                            @Override
+                            public void onStopTrackingTouch(SeekBar seekBar) {
+
+                            }
+                        });
                     }
                     mHandler.postDelayed(this,1);
                 }
@@ -301,6 +350,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void play(View view) {
+        if(songs==null)
+        {
+            Toast.makeText(this,"NO SONG FOUND",Toast.LENGTH_LONG).show();
+        }
         if(!isSongStarted)
         {
             Toast.makeText(this,"Loading",Toast.LENGTH_LONG).show();
