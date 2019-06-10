@@ -12,35 +12,12 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <LinearLayout
+        <SearchView
+            android:id="@+id/searchbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="5dp"
-                android:background="#3d3b3b"
-                android:onClick="search"
-                android:text="SEARCH"
-                android:textColor="#a5a2a2"
-                android:textSize="20sp" />
-
-            <EditText
-                android:id="@+id/query"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="10dp"
-                android:text="SEARCH ITEM"
-                android:textAlignment="center"
-                android:textColor="#a5a2a2"
-                android:textSize="20sp" />
-        </LinearLayout>
+            android:inputType="text"
+            android:queryHint="Search item" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:layout_marginTop="30dp">
+                android:layout_marginTop="20dp">
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -86,46 +63,34 @@
             android:orientation="horizontal"
             android:textAlignment="center">
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/ffb"
-                android:onClick="runffb"
-                android:textAlignment="center"
-                android:textSize="18sp" />
-
-            <Button
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/back"
                 android:onClick="runBack"
-                android:textSize="18sp" />
+                android:textAlignment="center"
+                android:textSize="18sp"
+                android:src="@android:drawable/ic_media_previous"/>
 
-            <Button
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/play"
                 android:onClick="play"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:src="@android:drawable/ic_media_play"/>
 
-            <Button
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:id="@+id/next"
                 android:onClick="runNext"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:src="@android:drawable/ic_media_next"/>
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/fff"
-                android:onClick="runfff"
-                android:textSize="18sp" />
         </LinearLayout>
         <SeekBar
             android:layout_width="match_parent"
@@ -133,12 +98,11 @@
             android:id="@+id/seek"
             android:padding="15sp" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyle"
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="visible" />
+            android:src="@android:drawable/ic_menu_share"
+            android:onClick="share"/>
 
     </LinearLayout>
 

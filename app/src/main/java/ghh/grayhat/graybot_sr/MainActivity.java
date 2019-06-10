@@ -3,29 +3,25 @@ package ghh.grayhat.graybot_sr;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.session.MediaSession;
 import android.os.Build;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.StrictMode;
-import android.renderscript.RenderScript;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.RemoteViews;
+import android.widget.SearchView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,8 +44,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button ffb,back,play,next,fff;
-    EditText queryS;
+    ImageButton back,play,next;
+    SearchView searchView;
     MediaPlayer mediaPlayer;
     List<String> songs;
     ImageView thumb;
@@ -65,7 +61,6 @@ public class MainActivity extends AppCompatActivity {
     private NotificationCompat.Builder mBuilder;
     private NotificationManager mNotificationManager;
     private RemoteViews mRemoteViews;
-    ProgressBar pg;
     Bitmap bit;
     private boolean notificationStarted;
 
@@ -88,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setViewResume() {
-        pg.setVisibility(pg.VISIBLE);
         PyObject titl=ndat.get("title");
         PyObject img=ndat.get("thumb");
         try {
@@ -101,55 +95,85 @@ public class MainActivity extends AppCompatActivity {
         {
             e.printStackTrace();
         }
-        pg.setVisibility(pg.INVISIBLE);
     }
 
     @Override protected void onStart() {
 
         super.onStart();
         Toast.makeText(this,"STARTED",Toast.LENGTH_SHORT).show();
-        pg.setVisibility(View.INVISIBLE);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        isSongStarted=false;
+        currentSong=0;
+        searchView=(SearchView)findViewById(R.id.searchbar);
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                search(searchView);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+        thumb=(ImageView)findViewById(R.id.thumbnail);
+        title=(TextView)findViewById(R.id.title);
+        channel=(TextView)findViewById(R.id.channel);
+        back=(ImageButton)findViewById(R.id.back);
+        play=(ImageButton)findViewById(R.id.play);
+        next=(ImageButton)findViewById(R.id.next);
+        seek=(SeekBar)findViewById(R.id.seek);
         int SDK_INT = android.os.Build.VERSION.SDK_INT;
         if (SDK_INT > 8)
         {
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                     .permitAll().build();
             StrictMode.setThreadPolicy(policy);
-            isSongStarted=false;
-            currentSong=0;
-            thumb=(ImageView)findViewById(R.id.thumbnail);
-            title=(TextView)findViewById(R.id.title);
-            channel=(TextView)findViewById(R.id.channel);
-            ffb=(Button)findViewById(R.id.ffb);
-            ffb.setText("<<<");
-            queryS=(EditText)findViewById(R.id.query);
-            back=(Button)findViewById(R.id.back);
-            back.setText("<<");
-            play=(Button)findViewById(R.id.play);
-            play.setText("[>");
-            next=(Button)findViewById(R.id.next);
-            next.setText(">>");
-            fff=(Button)findViewById(R.id.fff);
-            fff.setText(">>>");
-            pg=(ProgressBar)findViewById(R.id.progressBar);
             try
             {
                 if (! Python.isStarted()) {
                     Python.start(new AndroidPlatform(getBaseContext()));
                 }
                 pafy = Python.getInstance().getModule("pafy");
+                Intent intent = getIntent();
+                String action = intent.getAction();
+                String type = intent.getType();
+
+                if (Intent.ACTION_SEND.equals(action) && type != null) {
+                    if ("text/plain".equals(type)) {
+                        handleSendText(intent); // Handle text being sent
+                    }
+                }
             }
             catch(Exception e)
             {
                 e.printStackTrace();
             }
-            seek=(SeekBar)findViewById(R.id.seek);
+        }
+    }
+
+    private void handleSendText(Intent intent) {
+        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+        if (sharedText != null) {
+            songs=null;
+            if(mediaPlayer!=null)
+            {
+                if(mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+                }
+            }
+            mediaPlayer=null;
+            songs=new ArrayList<>();
+            songs.add(sharedText);
+            setView();
+            play(play);
         }
     }
 
@@ -169,12 +193,10 @@ public class MainActivity extends AppCompatActivity {
     {
         List<String> links=new ArrayList<>();
         try {
-            pg.setVisibility(pg.VISIBLE);
             URL url = new URL("https://www.youtube.com/results?search_query=" + URLEncoder.encode(query, "UTF-8"));
             HttpsURLConnection urlConnection=(HttpsURLConnection) url.openConnection();
             urlConnection.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.95 Safari/537.11");
             String code = toString(urlConnection.getInputStream());
-            pg.setVisibility(pg.INVISIBLE);
             while(code.contains("watch?v="))
             {
                 code=code.substring(code.indexOf("watch?v="));
@@ -213,8 +235,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void search(View view) {
-        pg.setVisibility(View.VISIBLE);
-        String query=""+queryS.getText();
+        String query=""+searchView.getQuery();
         Toast.makeText(this,"SEARCHING...",Toast.LENGTH_SHORT).show();
         songs = getLinks(query);
         isSongStarted=false;
@@ -224,11 +245,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setView() {
-        pg.setVisibility(View.VISIBLE);
         ndat=pafy.callAttr("new",""+songs.get(currentSong));
         PyObject titl=ndat.get("title");
         PyObject img=ndat.get("thumb");
-        pg.setVisibility(pg.INVISIBLE);
         try {
             bit=getBitmapFromURL(""+img);
             thumb.setImageBitmap(bit);
@@ -289,9 +308,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.setDataSource(getUrl());
-            pg.setVisibility(pg.VISIBLE);
             mediaPlayer.prepare();
-            pg.setVisibility(pg.INVISIBLE);
             mediaPlayer.start();
 
             if(notificationStarted)
@@ -302,17 +319,18 @@ public class MainActivity extends AppCompatActivity {
             {
                 setUpNotification();
             }
-            play.setText("||");
+            play.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_pause));
             seek.setProgress(0);
             seek.setMax(mediaPlayer.getDuration());
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    play.setText("|>");
+                    play.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_play));
                     mediaPlayer.stop();
                     mediaPlayer.release();
                     isSongStarted=false;
                     mediaPlayer=null;
+                    runNext(next);
                 }
             });
             isSongStarted=true;
@@ -352,10 +370,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void runffb(View view) {
+        if(mediaPlayer==null)
+        {
+            Toast.makeText(this,"NO CURRENTLY PLAYING SONG",Toast.LENGTH_SHORT).show();
+            return;
+        }
         mediaPlayer.seekTo(mediaPlayer.getCurrentPosition()-5000);
     }
 
     public void runBack(View view) {
+        if(mediaPlayer==null)
+        {
+            Toast.makeText(this,"NO CURRENTLY PLAYING SONG",Toast.LENGTH_SHORT).show();
+            return;
+        }
         if(currentSong==0)
         {
             mediaPlayer.seekTo(0);
@@ -384,20 +412,19 @@ public class MainActivity extends AppCompatActivity {
         if(!isSongStarted)
         {
             Toast.makeText(this,"Loading",Toast.LENGTH_LONG).show();
-            play.setText("O");
             playAudio();
-            play.setText("||");
+            play.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_pause));
             return;
         }
         if(mediaPlayer.isPlaying())
         {
             mediaPlayer.pause();
-            play.setText("|>");
+            play.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_play));
         }
         else
         {
             mediaPlayer.start();
-            play.setText("||");
+            play.setImageDrawable(getResources().getDrawable(android.R.drawable.ic_media_pause));
         }
     }
 
@@ -493,4 +520,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        mediaPlayer=null;
+        isSongStarted=false;
+        mNotificationManager.cancel(NOTIF_ID);
+        notificationStarted=false;
+        mNotificationManager.cancelAll();
+        mNotification=null;
+    }
+
+    public void share(View view) {
+        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        String shareBody = "SHARED FROM GrayBot\nLink : "+songs.get(currentSong);
+        sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Song Shared from GrayBot");
+        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+        startActivity(Intent.createChooser(sharingIntent, "Share To"));
+    }
 }
