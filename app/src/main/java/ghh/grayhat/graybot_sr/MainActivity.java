@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
 
     SearchView searchView;
     ListView listView;
-    TextView txtv;
     PyObject pafy;
     private AsyncHttpClient client;
     ArrayList arrayList;
@@ -42,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         searchView = (SearchView) findViewById(R.id.search);
         listView = (ListView) findViewById(R.id.list);
-        txtv=(TextView)findViewById(R.id.voiceS);
         client = new AsyncHttpClient();
         arrayList = new ArrayList();
         songList = new ArrayList<>();
@@ -184,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
                     ArrayList result = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     System.out.println(""+result.get(0));
-                    txtv.setText(""+result.get(0));
                     searchView.setQuery(""+result.get(0),false);
                     searchView.setQuery(""+result.get(0),true);
                 }

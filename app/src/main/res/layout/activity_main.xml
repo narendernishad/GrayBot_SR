@@ -28,12 +28,6 @@
                     android:id="@+id/voice"
                     android:onClick="record"
                     android:layout_gravity="center"/>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/voiceS"
-                    android:textAlignment="center"
-                    android:background="@android:color/transparent"/>
 
                 <ListView
                     android:layout_width="match_parent"
