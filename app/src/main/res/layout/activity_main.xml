@@ -1,109 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:background="#333535">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <SearchView
-            android:id="@+id/searchbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:queryHint="Search item" />
-
+    android:background="@drawable/newsplash">
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="20dp">
-            <ImageView
-                android:layout_width="150dp"
-                android:layout_height="150dp"
-                android:src="@drawable/noaudio"
-                android:backgroundTint="#000000"
-                android:id="@+id/thumbnail"
-                android:backgroundTintMode="multiply"/>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_marginTop="20dp">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+                <SearchView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/search"
+                    android:queryHint="SEARCH"
+                    android:outlineSpotShadowColor="@color/colorPrimary"
+                    android:outlineAmbientShadowColor="@color/colorPrimary"
+                    android:textAlignment="center">
+                </SearchView>
+
+                <ImageButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@android:drawable/presence_audio_away"
+                    android:background="@android:color/transparent"
+                    android:id="@+id/voice"
+                    android:onClick="record"
+                    android:layout_gravity="center"/>
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="SONG TITLE"
+                    android:id="@+id/voiceS"
                     android:textAlignment="center"
-                    android:textFontWeight="10sp"
-                    android:id="@+id/title"/>
-                <TextView
+                    android:background="@android:color/transparent"/>
+
+                <ListView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="CHANNEL NAME"
-                    android:textAlignment="center"
-                    android:textFontWeight="15sp"
-                    android:id="@+id/channel"/>
-            </LinearLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_marginTop="30dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:accessibilityPaneTitle="PLAYBACK"
-            android:background="#603030"
-            android:backgroundTint="#a5a2a2"
-            android:elevation="20dp"
-            android:orientation="horizontal"
-            android:textAlignment="center">
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/back"
-                android:onClick="runBack"
-                android:textAlignment="center"
-                android:textSize="18sp"
-                android:src="@android:drawable/ic_media_previous"/>
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/play"
-                android:onClick="play"
-                android:textSize="18sp"
-                android:src="@android:drawable/ic_media_play"/>
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/next"
-                android:onClick="runNext"
-                android:textSize="18sp"
-                android:src="@android:drawable/ic_media_next"/>
+                    android:id="@+id/list"
+                    android:textAlignment="center">
+                </ListView>
 
         </LinearLayout>
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/seek"
-            android:padding="15sp" />
 
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@android:drawable/ic_menu_share"
-            android:onClick="share"/>
-
-    </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>

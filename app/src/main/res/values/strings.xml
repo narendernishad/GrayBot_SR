@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">GrayBot</string>
     <string name="ticker_text">GrayBot</string>
+
+    <string name="title_activity_player">Player</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
