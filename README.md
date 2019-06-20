@@ -1,5 +1,6 @@
 # GrayBot_SR
 ## This is an android app that allows you to search terms on YouTube and stream the audio in the app.  
+### In built search is somewhat slow. Better option to play 🔉 is to search on Youtube and share to GrayBot.  
 ## ....  
 ![Main Screen](/ss/main.jpeg)  
 ## ....  
