@@ -20,15 +20,6 @@
                     android:textAlignment="center">
                 </SearchView>
 
-                <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@android:drawable/presence_audio_away"
-                    android:background="@android:color/transparent"
-                    android:id="@+id/voice"
-                    android:onClick="record"
-                    android:layout_gravity="center"/>
-
                 <ListView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

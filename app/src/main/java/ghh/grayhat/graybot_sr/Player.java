@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.PowerManager;
-import android.os.StrictMode;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -89,8 +88,8 @@ public class Player extends AppCompatActivity {
 
         setContentView(R.layout.activity_player);
 
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+        //StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        //StrictMode.setThreadPolicy(policy);
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         b=(ImageButton)findViewById(R.id.back);
@@ -107,7 +106,7 @@ public class Player extends AppCompatActivity {
         song=MainActivity.songList.get(position);
         //image=song.getImage();
         title=song.getTitle();
-        author=song.getChannel();
+        author=song.getAuthor();
         mrl=song.getMrl();
         //frame.setBackground(new BitmapDrawable(getResources(),image));
         details.setText(title+"\n"+author);
@@ -285,7 +284,7 @@ public class Player extends AppCompatActivity {
     public void share(View view) {
         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
         sharingIntent.setType("text/plain");
-        String shareBody = "SHARED FROM GrayBot\nLink : "+song.getSource();
+        String shareBody = "SHARED FROM GrayBot\nLink : "+song.getUrl();
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Song Shared from GrayBot");
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
         startActivity(Intent.createChooser(sharingIntent, "Share To"));

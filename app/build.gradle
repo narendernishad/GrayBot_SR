@@ -1,16 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.chaquo.python'
 
 android {
-    flavorDimensions "abi"
     compileSdkVersion 28
     defaultConfig {
-        python {
-            pip {
-                install "pafy==0.5.4"
-                install "youtube_dl"
-            }
-        }
         applicationId "ghh.grayhat.graybot_sr"
         minSdkVersion 19
         targetSdkVersion 28
@@ -18,16 +10,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-    productFlavors {
-        arm {
-            dimension "abi"
-            ndk { abiFilters "armeabi-v7a" }
-        }
-        x86 {
-            dimension "abi"
-            ndk { abiFilters "x86" }
-        }
-    }
+
     buildTypes {
         release {
             minifyEnabled false

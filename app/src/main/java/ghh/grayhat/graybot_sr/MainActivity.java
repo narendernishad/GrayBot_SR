@@ -2,24 +2,25 @@ package ghh.grayhat.graybot_sr;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.os.Build;
 import android.speech.RecognizerIntent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.chaquo.python.PyObject;
-import com.chaquo.python.Python;
-import com.chaquo.python.android.AndroidPlatform;
 import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.TextHttpResponseHandler;
 
-import java.net.URLEncoder;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,7 +31,6 @@ public class MainActivity extends AppCompatActivity {
 
     SearchView searchView;
     ListView listView;
-    PyObject pafy;
     private AsyncHttpClient client;
     ArrayList arrayList;
     public static List<Song> songList;
@@ -42,17 +42,16 @@ public class MainActivity extends AppCompatActivity {
         searchView = (SearchView) findViewById(R.id.search);
         listView = (ListView) findViewById(R.id.list);
         client = new AsyncHttpClient();
+        client.setTimeout(30*1000);
+        client.setConnectTimeout(30*1000);
+        client.setResponseTimeout(30*1000);
         arrayList = new ArrayList();
         songList = new ArrayList<>();
         searchView.setSubmitButtonEnabled(true);
         try {
-            if (!Python.isStarted()) {
-                Python.start(new AndroidPlatform(getBaseContext()));
-            }
             Intent intent = getIntent();
             String action = intent.getAction();
             String type = intent.getType();
-            pafy = Python.getInstance().getModule("pafy");
             if (Intent.ACTION_SEND.equals(action) && type != null) {
                 if ("text/plain".equals(type)) {
                     handleSendText(intent); // Handle text being sent
@@ -61,42 +60,56 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        searchView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                record(v);
+                return false;
+            }
+        });
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Toast.makeText(MainActivity.this, "Searching", Toast.LENGTH_SHORT).show();
-                String url = "";
-                try {
-                    url = "https://www.youtube.com/results?search_query=" + URLEncoder.encode(query, "UTF-8");
-                } catch (Exception e) {
-                    url = "https://www.youtube.com/results?search_query=" + query.replace(' ', '+');
-                }
+                Toast.makeText(MainActivity.this, "Searching : "+query, Toast.LENGTH_SHORT).show();
+                String url = "https://gray-application.herokuapp.com/songs/list/"+query.replaceAll("\\s","+");
                 System.out.println("URL : "+url);
-                client.get(url, new TextHttpResponseHandler() {
+                client.get(url, new AsyncHttpResponseHandler() {
                     @Override
-                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-
+                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                        String data=new String(responseBody);
+                        Log.d("recievedData",data);
+                        try {
+                            JSONArray array=new JSONArray(data);
+                            for(int i=0;i<array.length();i++)
+                            {
+                                JSONObject jsnobj = array.getJSONObject(i);
+                                String link=jsnobj.getString("url");
+                                String title=jsnobj.getString("title");
+                                String author=jsnobj.getString("author");
+                                String mrl=jsnobj.getString("mrl");
+                                Song song=new Song(link,title,author,mrl);
+                                songList.add(song);
+                                arrayList.add(title+"\n"+author);
+                            }
+                            ArrayAdapter adapter = new ArrayAdapter(MainActivity.this,android.R.layout.simple_list_item_1,arrayList);
+                            listView.setAdapter(adapter);
+                            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                @Override
+                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                    playSong(position);
+                                }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.d("fail","client error");
+                            ex.printStackTrace();
+                        }
                     }
 
                     @Override
-                    public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                        String code=responseString;
-                        //System.out.println("CODE : \n"+code);
-                        List<String> links=new ArrayList<>();
-                        while(code.contains("watch?v="))
-                        {
-                            code=code.substring(code.indexOf("watch?v="));
-                            String tmp=code.substring(0,11+"watch?v=".length());
-                            System.out.println("https://www.youtube.com/"+tmp);
-                            if(!links.contains("https://www.youtube.com/"+tmp))
-                            {
-                                links.add("https://www.youtube.com/"+tmp);
-                                System.out.println("UNIQUE : https://www.youtube.com/"+tmp);
-                            }
-                            code=code.substring(12);
-                        }
-                        System.out.println("GOT LINKS : "+links.size());
-                        updateList(links);
+                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
                     }
                 });
                 return true;
@@ -113,43 +126,37 @@ public class MainActivity extends AppCompatActivity {
         String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
         if(sharedText==null)
             return;
-        PyObject dat=pafy.callAttr("new",sharedText);
-        Song song=new Song(dat,sharedText);
-        songList.add(song);
-        playSong(0);
-    }
-
-    private void updateList(List<String> links) {
-        ArrayAdapter adapter=new ArrayAdapter(MainActivity.this,android.R.layout.simple_list_item_1,arrayList);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        client=new AsyncHttpClient();
+        client.setTimeout(30*1000);
+        songList=new ArrayList<>();
+        String base="https://www.youtube.com/watch?v=";
+        String url="https://gray-application.herokuapp.com/songs/data/"+sharedText.substring(base.length());
+        client.get(url, new AsyncHttpResponseHandler() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                playSong(position);
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                String data=new String(responseBody);
+                Log.d("Detdata",data);
+                try {
+                    JSONObject jsonObject=new JSONObject(data);
+                    String lnk=jsonObject.getString("url");
+                    String tit=jsonObject.getString("title");
+                    String aut=jsonObject.getString("author");
+                    String mrl=jsonObject.getString("mrl");
+                    Song song=new Song(lnk,tit,aut,mrl);
+                    songList.add(song);
+                }
+                catch (Exception ex)
+                {
+                    ex.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+
             }
         });
-        for (String link : links)
-        {
-            if(link.startsWith("https:"))
-            {
-                ;
-            }
-            else
-            {
-                continue;
-            }
-            try {
-                PyObject dat=pafy.callAttr("new",link);
-                Song song=new Song(dat,link);
-                songList.add(song);
-                arrayList.add(""+song.getTitle()+"\n"+song.getChannel());
-                adapter.notifyDataSetChanged();
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        }
+        playSong(0);
     }
 
     private void playSong(int position) {
@@ -182,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
                     ArrayList result = data
                             .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                     System.out.println(""+result.get(0));
-                    searchView.setQuery(""+result.get(0),false);
+                    searchView.setQueryHint(result.get(0)+"");
                     searchView.setQuery(""+result.get(0),true);
                 }
                 break;
