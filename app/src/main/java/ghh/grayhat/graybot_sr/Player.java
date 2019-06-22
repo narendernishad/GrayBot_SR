@@ -116,7 +116,9 @@ public class Player extends AppCompatActivity {
         else {
             mediaPlayer = MediaPlayerData.player;
             mediaPlayer.stop();
+            MediaPlayerData.player.stop();
             mediaPlayer.release();
+            MediaPlayerData.player.release();
             mediaPlayer=null;
         }
         try {
@@ -156,6 +158,7 @@ public class Player extends AppCompatActivity {
                     setButtons();
                     mediaPlayer.release();
                     mediaPlayer=null;
+                    MediaPlayerData.player.release();
                     MediaPlayerData.player=null;
                 }
             });
@@ -298,5 +301,15 @@ public class Player extends AppCompatActivity {
         sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Song Shared from GrayBot");
         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
         startActivity(Intent.createChooser(sharingIntent, "Share To"));
+    }
+
+    public void repeat(View view) {
+        if(mediaPlayer==null)
+            return;
+        if(mediaPlayer.isLooping())
+            mediaPlayer.setLooping(false);
+        else
+            mediaPlayer.setLooping(true);
+        Toast.makeText(this,"Repeat : "+(mediaPlayer.isLooping() ? "ON" : "OFF"),Toast.LENGTH_SHORT).show();
     }
 }

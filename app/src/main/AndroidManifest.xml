@@ -18,7 +18,9 @@
             android:name=".Player"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_player"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme">
+
+        </activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -47,16 +47,25 @@
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:src="@android:drawable/stat_notify_sync"
+                android:onClick="repeat"
+                android:layout_weight=".005"
+                android:background="@android:color/transparent"
+                android:id="@+id/repeat"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_media_previous"
                 android:onClick="runb"
-                android:layout_weight="100"
+                android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:id="@+id/back"/>
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_play"
-                android:layout_weight="100"
+                android:layout_weight="1"
                 android:onClick="play"
                 android:background="@android:color/transparent"
                 android:id="@+id/play"/>
@@ -64,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_media_next"
-                android:layout_weight="100"
+                android:layout_weight="1"
                 android:onClick="runn"
                 android:background="@android:color/transparent"
                 android:id="@+id/next"/>
@@ -72,7 +81,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_share"
-                android:layout_weight="1"
+                android:layout_weight=".005"
                 android:background="@android:color/transparent"
                 android:onClick="share"/>
 
