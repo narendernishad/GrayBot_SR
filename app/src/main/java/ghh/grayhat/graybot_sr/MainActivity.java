@@ -2,7 +2,6 @@ package ghh.grayhat.graybot_sr;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.os.Build;
 import android.speech.RecognizerIntent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,7 +15,6 @@ import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.TextHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,9 +40,10 @@ public class MainActivity extends AppCompatActivity {
         searchView = (SearchView) findViewById(R.id.search);
         listView = (ListView) findViewById(R.id.list);
         client = new AsyncHttpClient();
-        client.setTimeout(30*1000);
-        client.setConnectTimeout(30*1000);
-        client.setResponseTimeout(30*1000);
+        client.setTimeout(60*1000);
+        client.setConnectTimeout(60*1000);
+        client.setResponseTimeout(60*1000);
+        client.setEnableRedirects(true);
         arrayList = new ArrayList();
         songList = new ArrayList<>();
         searchView.setSubmitButtonEnabled(true);
@@ -138,19 +137,6 @@ public class MainActivity extends AppCompatActivity {
         String base="https://www.youtube.com/watch?v=";
         String base2="https://youtu.be/";
         String url="https://gray-application.herokuapp.com/songs/data/";
-        /*if(sharedText.startsWith(base))
-        {
-            url+=sharedText.substring(base.length());
-        }
-        else if (sharedText.startsWith(base2))
-        {
-            url+=sharedText.substring(base2.length());
-        }
-        else
-        {
-            Toast.makeText(this,"Invalid url",Toast.LENGTH_SHORT).show();
-            return;
-        }*/
         url+=sharedText.substring(sharedText.lastIndexOf('/')+1);
         System.out.println("url : "+url);
         client.get(url, new AsyncHttpResponseHandler() {
@@ -166,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
                     String mrl=jsonObject.getString("mrl");
                     Song song=new Song(lnk,tit,aut,mrl);
                     songList.add(song);
-                    playSong(0);
+                    playSong(songList.size()-1);
                 }
                 catch (Exception ex)
                 {

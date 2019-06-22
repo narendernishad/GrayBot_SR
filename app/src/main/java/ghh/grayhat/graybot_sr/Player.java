@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Player extends AppCompatActivity {
 
@@ -123,7 +124,16 @@ public class Player extends AppCompatActivity {
             mediaPlayer.setWakeMode(getApplicationContext(), PowerManager.PARTIAL_WAKE_LOCK);
             mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mediaPlayer.setDataSource(mrl);
-            mediaPlayer.prepare();
+            System.out.println(title+" : "+mrl);
+            try{
+                mediaPlayer.prepare();
+            }
+            catch (Exception err)
+            {
+                err.printStackTrace();
+                Toast.makeText(this,"Unable to load media.\nTry again Later",Toast.LENGTH_LONG).show();
+                return;
+            }
             finalTime=mediaPlayer.getDuration();
             seekBar.setProgress((int)startTime);
             MediaPlayerData.player=mediaPlayer;
@@ -270,13 +280,13 @@ public class Player extends AppCompatActivity {
     }
     private Runnable UpdateSongTime = new Runnable() {
         public void run() {
-            startTime = mediaPlayer.getCurrentPosition();
-            seekBar.setMax((int)finalTime);
-            seekBar.setProgress((int)startTime);
             if(mediaPlayer==null)
                 return;
             if(!mediaPlayer.isPlaying())
                 return;
+            startTime = mediaPlayer.getCurrentPosition();
+            seekBar.setMax((int)finalTime);
+            seekBar.setProgress((int)startTime);
             myHandler.postDelayed(this, 100);
         }
     };
