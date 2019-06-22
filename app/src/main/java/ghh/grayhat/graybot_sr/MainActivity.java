@@ -70,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                if(query.startsWith("https://"))
+                {
+                    Toast.makeText(MainActivity.this,"Cannot search a url",Toast.LENGTH_SHORT).show();
+                    return false;
+                }
                 Toast.makeText(MainActivity.this, "Searching : "+query, Toast.LENGTH_SHORT).show();
                 String url = "https://gray-application.herokuapp.com/songs/list/"+query.replaceAll("\\s","+");
                 System.out.println("URL : "+url);
@@ -129,8 +134,25 @@ public class MainActivity extends AppCompatActivity {
         client=new AsyncHttpClient();
         client.setTimeout(30*1000);
         songList=new ArrayList<>();
+        System.out.println(sharedText);
         String base="https://www.youtube.com/watch?v=";
-        String url="https://gray-application.herokuapp.com/songs/data/"+sharedText.substring(base.length());
+        String base2="https://youtu.be/";
+        String url="https://gray-application.herokuapp.com/songs/data/";
+        /*if(sharedText.startsWith(base))
+        {
+            url+=sharedText.substring(base.length());
+        }
+        else if (sharedText.startsWith(base2))
+        {
+            url+=sharedText.substring(base2.length());
+        }
+        else
+        {
+            Toast.makeText(this,"Invalid url",Toast.LENGTH_SHORT).show();
+            return;
+        }*/
+        url+=sharedText.substring(sharedText.lastIndexOf('/')+1);
+        System.out.println("url : "+url);
         client.get(url, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
@@ -144,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                     String mrl=jsonObject.getString("mrl");
                     Song song=new Song(lnk,tit,aut,mrl);
                     songList.add(song);
+                    playSong(0);
                 }
                 catch (Exception ex)
                 {
@@ -156,7 +179,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        playSong(0);
     }
 
     private void playSong(int position) {
